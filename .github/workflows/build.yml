@@ -34,12 +34,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang curl git unzip lzma libssl-dev libcurl4-openssl-dev make
 
-          # Theos のインストール
-          git clone --recursive https://github.com/theos/theos.git /opt/theos
+          # Theos のインストール (キャッシュがない場合のみ実行)
+          if [ ! -d "/opt/theos" ]; then
+            git clone --recursive https://github.com/theos/theos.git /opt/theos
+          fi
 
-          # iOS SDK のインストール
-          mkdir -p /opt/theos/sdks
-          git clone https://github.com/theos/sdks.git /opt/theos/sdks
+          # iOS SDK のインストール (キャッシュがない場合のみ実行)
+          if [ ! -d "/opt/theos/sdks/iPhoneOS.sdk" ]; then
+            mkdir -p /opt/theos/sdks
+            git clone https://github.com/theos/sdks.git /opt/theos/sdks
+          fi
 
       - name: Set environment variables
         run: |
