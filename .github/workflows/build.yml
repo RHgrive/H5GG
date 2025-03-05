@@ -16,27 +16,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Theos environment
+      # Theos 環境をキャッシュする
+      - name: Cache Theos and SDKs
+        uses: actions/cache@v3
+        with:
+          path: |
+            /opt/theos
+            /opt/theos/sdks
+          key: theos-${{ runner.os }}-${{ hashFiles('Makefile') }}
+          restore-keys: |
+            theos-${{ runner.os }}-
+
+      - name: Set up Theos environment (if not cached)
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          # 必要なツールをインストール
+          echo "Theos not found in cache, setting up..."
           sudo apt-get update
           sudo apt-get install -y clang curl git unzip lzma libssl-dev libcurl4-openssl-dev make
 
-          # Theos をインストール
+          # Theos のインストール
           git clone --recursive https://github.com/theos/theos.git /opt/theos
 
-          # iOS SDK をインストール
+          # iOS SDK のインストール
           mkdir -p /opt/theos/sdks
-          cd /opt/theos/sdks
-          git clone https://github.com/theos/sdks.git .
+          git clone https://github.com/theos/sdks.git /opt/theos/sdks
 
-          # Theos のパスを設定
+      - name: Set environment variables
+        run: |
           echo 'export THEOS=/opt/theos' >> $GITHUB_ENV
           echo 'export PATH=$PATH:/opt/theos/bin:/opt/theos/vendor/bin' >> $GITHUB_ENV
 
       - name: Build dylib
         run: |
-          # 環境変数を設定
           export THEOS=/opt/theos
           export THEOS_MAKE_PATH=$THEOS/makefiles
           export TARGET=iphone:13.7:11.4
