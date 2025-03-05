@@ -1,0 +1,45 @@
+name: Build dylib for iOS
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Theos environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang libssl-dev libicu-dev libcurl4-openssl-dev
+          git clone https://github.com/theos/theos.git /opt/theos
+
+      - name: Set up dependencies
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/theos/theos/master/tools/bootstrap.sh | bash
+          export PATH=$PATH:/opt/theos/tools
+
+      - name: Build dylib
+        run: |
+          export TARGET=iphone:13.7:11.4
+          export ARCHS=arm64
+          export THEOS_DEVICE_IP=iphoneX.local
+          export THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip
+          export DEBUG=0
+          export STRIP=1
+          export FINALPACKAGE=1
+          make -C tweak.mm
+
+      - name: Upload dylib build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dylib
+          path: .theos/obj/iphone_arm64/H5GG.dylib
