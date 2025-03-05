@@ -36,7 +36,7 @@ jobs:
           export DEBUG=0
           export STRIP=1
           export FINALPACKAGE=1
-          make -C tweak.mm
+          make -C Tweak.mm
 
       - name: Upload dylib build artifact
         uses: actions/upload-artifact@v4
