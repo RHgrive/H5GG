@@ -18,36 +18,38 @@ jobs:
 
       - name: Set up Theos environment
         run: |
+          # 必要なツールをインストール
           sudo apt-get update
-          sudo apt-get install -y clang libssl-dev libicu-dev libcurl4-openssl-dev
-          git clone https://github.com/theos/theos.git /opt/theos
+          sudo apt-get install -y clang curl git unzip lzma libssl-dev libcurl4-openssl-dev make
 
-      - name: Set up dependencies
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/theos/theos/master/tools/bootstrap.sh | bash
-          export PATH=$PATH:/opt/theos/tools
+          # Theos をインストール
+          git clone --recursive https://github.com/theos/theos.git /opt/theos
+
+          # iOS SDK をインストール
+          mkdir -p /opt/theos/sdks
+          cd /opt/theos/sdks
+          git clone https://github.com/theos/sdks.git .
+
+          # Theos のパスを設定
+          echo 'export THEOS=/opt/theos' >> $GITHUB_ENV
+          echo 'export PATH=$PATH:/opt/theos/bin:/opt/theos/vendor/bin' >> $GITHUB_ENV
 
       - name: Build dylib
         run: |
-          # Set Theos and build environment variables
+          # 環境変数を設定
           export THEOS=/opt/theos
           export THEOS_MAKE_PATH=$THEOS/makefiles
           export TARGET=iphone:13.7:11.4
           export ARCHS=arm64
-          export THEOS_DEVICE_IP=iphoneX.local
           export THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip
           export DEBUG=0
           export STRIP=1
           export FINALPACKAGE=1
 
-          # Check environment variables
-          echo "THEOS: $THEOS"
-          echo "THEOS_MAKE_PATH: $THEOS_MAKE_PATH"
+          # SDK 確認 (デバッグ用)
+          ls -la /opt/theos/sdks
 
-          # Check file structure
-          ls -la /opt/theos/makefiles
-
-          # Run the build
+          # Dylib をビルド
           make -C .
 
       - name: Upload dylib build artifact
