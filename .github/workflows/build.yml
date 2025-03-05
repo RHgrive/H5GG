@@ -30,6 +30,8 @@ jobs:
       - name: Build dylib
         run: |
           # Set Theos and build environment variables
+          export THEOS=/opt/theos
+          export THEOS_MAKE_PATH=$THEOS/makefiles
           export TARGET=iphone:13.7:11.4
           export ARCHS=arm64
           export THEOS_DEVICE_IP=iphoneX.local
@@ -38,11 +40,15 @@ jobs:
           export STRIP=1
           export FINALPACKAGE=1
 
-          # Ensure correct directory structure
-          ls -la  # Check the content of the repository and make sure Tweak.mm is present
+          # Check environment variables
+          echo "THEOS: $THEOS"
+          echo "THEOS_MAKE_PATH: $THEOS_MAKE_PATH"
+
+          # Check file structure
+          ls -la /opt/theos/makefiles
 
           # Run the build
-          make -C .  # Execute the build from the root directory
+          make -C .
 
       - name: Upload dylib build artifact
         uses: actions/upload-artifact@v4
