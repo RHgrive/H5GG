@@ -3,10 +3,10 @@ name: Build dylib for iOS
 on:
   push:
     branches:
-      - main 
+      - main
   pull_request:
     branches:
-      - main  
+      - main
 
 jobs:
   build:
@@ -29,6 +29,7 @@ jobs:
 
       - name: Build dylib
         run: |
+          # Set Theos and build environment variables
           export TARGET=iphone:13.7:11.4
           export ARCHS=arm64
           export THEOS_DEVICE_IP=iphoneX.local
@@ -36,7 +37,12 @@ jobs:
           export DEBUG=0
           export STRIP=1
           export FINALPACKAGE=1
-          make -C Tweak.mm
+
+          # Ensure correct directory structure
+          ls -la  # Check the content of the repository and make sure Tweak.mm is present
+
+          # Run the build
+          make -C .  # Execute the build from the root directory
 
       - name: Upload dylib build artifact
         uses: actions/upload-artifact@v4
